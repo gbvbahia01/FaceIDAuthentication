@@ -21,24 +21,34 @@ class ViewController: UIViewController {
     
     @IBAction func verifyDidTap(_ sender: UIButton) {
         biometricIDAuth.canEvaluate { (canEvaluate, _, canEvaluateError) in
-            guard canEvaluate else {
-                alert(title: "Error",
-                      message: canEvaluateError?.localizedDescription ?? "Face ID/Touch ID may not be configured",
-                      okActionTitle: "Darn!")
-                return
-            }
-            
-            biometricIDAuth.evaluate { [weak self] (success, error) in
-                guard success else {
-                    self?.alert(title: "Error",
-                                message: error?.localizedDescription ?? "Face ID/Touch ID may not be configured",
-                                okActionTitle: "Darn!")
-                    return
-                }
+            if !canEvaluate {
+                biometricIDAuth.authenticateUser{ [weak self] (success, error) in
+                    guard success else {
+                        self?.alert(title: "Error!",
+                                    message: error?.localizedDescription ?? "Authentication failed!",
+                                    okActionTitle: "Darn!")
+                        return
+                    }
+                    
+                    self?.alert(title: "Success",
+                                message: "You have a free pass, now",
+                                okActionTitle: "Yay!")
+                    }
                 
-                self?.alert(title: "Success",
-                            message: "You have a free pass, now",
-                            okActionTitle: "Yay!")
+            } else {
+            
+                biometricIDAuth.evaluate { [weak self] (success, error) in
+                    guard success else {
+                        self?.alert(title: "Error!",
+                                    message: error?.localizedDescription ?? "Face ID/Touch ID may not be configured",
+                                    okActionTitle: "Darn!")
+                        return
+                    }
+                    
+                    self?.alert(title: "Success",
+                                message: "You have a free pass, now",
+                                okActionTitle: "Yay!")
+                }
             }
         }
     }
