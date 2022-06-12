@@ -96,6 +96,28 @@ class BiometricIDAuth {
         }
     }
     
+    func authenticateUser(completion: @escaping (Bool, BiometricError?) -> Void) {
+        let context = LAContext()
+
+        context.evaluatePolicy(LAPolicy.deviceOwnerAuthentication, localizedReason: "Please authenticate to proceed.") { [weak self] (success, error) in
+
+            guard success else {
+                DispatchQueue.main.async {
+                    // Unwraps Error
+                    // If not available, sends false for Success & nil for BiometricError
+                    guard let error = error else { return completion(false, nil) }
+                    
+                    // Maps error to our BiometricError
+                    completion(false, self?.biometricError(from: error as NSError))
+                }
+
+                return
+            }
+
+            completion(true, nil)
+        }
+    }
+    
     private func biometricType(for type: LABiometryType) -> BiometricType {
         switch type {
         case .none:
